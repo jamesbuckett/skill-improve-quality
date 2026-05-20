@@ -1,7 +1,7 @@
 ---
 name: improve-quality
 description: >-
-  Audit and improve the quality of a single-file HTML explainer page (typically `index.html`) in the current repo. Checks four dimensions — factual correctness against authoritative web sources, clarity and comprehension, professional prose (AI-slop detection), and structural quality against James's `style-guide` + `build-educational-site` pattern — then produces an inline summary and offers to apply approved edits. Use this skill whenever the user wants to QA, audit, fact-check, polish, sharpen, review, critique, validate, tighten, or improve the quality of an explainer page, primer, one-pager, landing page, deep-dive, or single-file HTML — even when they don't use the exact phrase "improve quality". Triggers include "check this page", "is this accurate", "review the prose", "polish this", "audit this index.html", "fact-check this", "is the content correct", "is this clear enough", "sharpen this writing", "tighten this page", "QA the page", "is this professional", "/improve-quality", or any request that boils down to "make this page better without changing its purpose". Does deep web research via Firecrawl (or WebSearch as fallback) to ground findings in authoritative primary sources, not blog posts or vendor marketing.
+  Audit and improve the quality of a single-file HTML explainer page (typically `index.html`) in the current repo. Checks four dimensions — factual correctness against authoritative web sources, clarity and comprehension, professional prose (AI-slop detection), and structural quality against James's `style-guide` + `build-educational-site` pattern — then produces an inline summary and offers to apply approved edits. Use this skill whenever the user wants to QA, audit, fact-check, polish, sharpen, review, critique, validate, tighten, or improve the quality of an explainer page, primer, one-pager, landing page, deep-dive, or single-file HTML — even when they don't use the exact phrase "improve quality". Triggers include "check this page", "is this accurate", "review the prose", "polish this", "audit this index.html", "fact-check this", "is the content correct", "is this clear enough", "sharpen this writing", "tighten this page", "QA the page", "is this professional", "/improve-quality", or any request that boils down to "make this page better without changing its purpose". Uses the Exa MCP server for web search and the Firecrawl plugin for extracting web resources (with WebSearch/WebFetch as fallback) to ground findings in authoritative primary sources, not blog posts or vendor marketing.
 ---
 
 # improve-quality
@@ -61,22 +61,28 @@ Follow these phases in order. Each phase has a clear exit condition.
 
 Write a one-paragraph "topic frame" to your working notes: what is this page about, who is it for, what regulatory framing (if any) is in scope. You'll use this for Phase 2.
 
-### Phase 2 — Research (deep topic expansion via Firecrawl)
+### Phase 2 — Research (deep topic expansion via Exa + Firecrawl)
 
 The user has chosen deep topic expansion. The goal is to build a knowledge base of what a complete, current treatment of this topic should include — then compare the page against it.
 
-**Use Firecrawl if available** (the user has it installed). Invoke through the existing Firecrawl skills:
+Split the work across two tools by their strength:
+- **Exa MCP Server** finds the right sources (neural search ranks authoritative pages well and surfaces primary specs over vendor blogs).
+- **Firecrawl plugin for Claude Code** extracts clean markdown from those sources (handles JS-rendered specs, regulator portals, and complex page layouts other extractors miss).
 
-1. **`firecrawl:firecrawl-search`** — run 3–5 targeted searches:
+Use them as a pipeline: Exa surfaces URLs → Firecrawl extracts markdown → dossier. Do not extract every Exa result; triage to the 3–5 most authoritative URLs first, then extract those.
+
+1. **Search — Exa MCP Server.** Use Exa's `web_search_exa` tool to run 3–5 targeted queries:
    - The topic name + "specification" (find the primary spec)
    - The topic name + the regulator's name (find the authoritative regulatory page)
    - The topic name + "current version" or "latest" (find what's current as of today)
    - Any specific clause IDs or version numbers from the page (verify each)
    - The topic name + "comparison" or "vs" (find the typical points of contrast)
 
-2. **`firecrawl:firecrawl-scrape`** — pull full markdown from the top 3–5 authoritative sources identified by search. Authoritative means: standards bodies, regulators, primary spec maintainers, official documentation. Not blog posts, not Wikipedia, not vendor marketing pages.
+   Exa-specific tips: request `numResults: 5–10` per query; prefer `type: "neural"` for conceptual queries ("what is X spec"), `type: "keyword"` for exact-string queries (clause IDs, version numbers); set `livecrawl: "always"` when verifying current-as-of-today claims. If the topic is academic, also call `research_paper_search`; if it concerns named vendors, also call `company_research`.
 
-If Firecrawl is unavailable, fall back to `WebSearch` + `WebFetch`. Same authoritative-source discipline applies.
+2. **Extract — Firecrawl plugin.** Once Exa has surfaced 3–5 authoritative URLs, use **`firecrawl:firecrawl-scrape`** to pull full markdown from each. Extract the URLs Exa returned — don't swap in URLs you remembered from prior sessions. Memorized "authoritative hubs" go stale, get archived, or land on the wrong edition; treating Exa as the arbiter is the point of running the search step. Authoritative means: standards bodies, regulators, primary spec maintainers, official documentation. Not blog posts, not Wikipedia, not vendor marketing pages. If a source requires interaction (login wall, click-through, paginated docs), use **`firecrawl:firecrawl-instruct`** instead. If you need to traverse an entire docs section, use **`firecrawl:firecrawl-crawl`** with a tight path filter.
+
+**Fallback (neither tool installed).** Use `WebSearch` to find sources and `WebFetch` to extract markdown. Run the same 3–5 query templates. The quality bar does not move: only primary sources land in the dossier regardless of which tool you used to find them.
 
 **Build a research dossier in working memory** with these slots:
 - Current version of the spec / regulation (with effective date)
