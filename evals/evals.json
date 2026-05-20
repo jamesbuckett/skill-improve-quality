@@ -1,0 +1,24 @@
+{
+  "skill_name": "improve-quality",
+  "notes": "Test prompts that should trigger this skill. Running these end-to-end requires a fixture index.html with planted quality issues across the four dimensions (factual, clarity, prose, structural). See evals/fixtures/ for sample pages once created.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just finished this FAPI 2.0 explainer at index.html and want to ship it tomorrow. Can you do a quality pass before I send it round? I want to make sure the regulatory references are right and the prose doesn't feel AI-written.",
+      "expected_output": "Report grouped by severity covering factual (DORA / FAPI / OAuth references verified against primary sources), clarity (undefined acronyms, runaway sentences), prose (AI-slop tic words, hedges, marketing voice), and structural (audience switcher wired, glossary completeness, single accent). Followed by interactive approval pass for each finding.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "this index.html got handed to me from a colleague and i'm not sure it's accurate — pcidss 4 stuff in particular. can you audit it?",
+      "expected_output": "Factual-heavy report with PCI-DSS 4.0.x clause IDs verified via Firecrawl against the PCI SSC documents, version numbers checked against current revision, every cited clause cross-referenced. Other dimensions covered but factual leads the report.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "is the page in this repo any good",
+      "expected_output": "Skill triggers on terse phrasing because it pattern-matches to QA intent on an HTML page in cwd. Discovers index.html, builds dossier via Firecrawl on the topic extracted from the page, runs all four dimensions, reports inline.",
+      "files": []
+    }
+  ]
+}
