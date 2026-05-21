@@ -70,6 +70,12 @@ ls -la ~/.claude/skills/skill-improve-quality
 # Should show: skill-improve-quality -> /home/<you>/projects/skill-improve-quality
 ```
 
+To update later, pull in the workspace clone — the symlink reflects the change immediately:
+
+```bash
+cd ~/projects/skill-improve-quality && git pull
+```
+
 ### 2. Verify the skill is loaded
 
 Start Claude Code in any project, then ask:
