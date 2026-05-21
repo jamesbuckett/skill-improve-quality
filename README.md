@@ -28,16 +28,47 @@ The skill produces an inline, severity-ranked report, then walks through finding
 
 ## Installation
 
-### 1. Clone the skill
+### 1. Install the skill
 
-Clone into Claude Code's personal-skills directory:
+Pick one of the two install paths below. The directory name under `~/.claude/skills/` must match the `name:` field in `SKILL.md` (`skill-improve-quality`) either way.
+
+#### Option A — Clone directly (simplest)
+
+Use this if you just want the skill installed and don't plan to edit it.
 
 ```bash
 git clone https://github.com/jamesbuckett/skill-improve-quality.git \
   ~/.claude/skills/skill-improve-quality
 ```
 
-The target directory name must match the `name:` field in `SKILL.md` (`skill-improve-quality`). If you clone elsewhere, rename the directory or update the symlink.
+To update later, `cd ~/.claude/skills/skill-improve-quality && git pull`.
+
+#### Option B — Clone to a workspace and symlink (recommended for maintainers)
+
+Use this if you want to edit the skill files in your normal development workspace and have Claude Code pick up changes immediately. Keeps a single source of truth at `~/projects/` (or wherever you keep code) and avoids two diverging copies.
+
+```bash
+# 1. Clone to your workspace
+git clone https://github.com/jamesbuckett/skill-improve-quality.git \
+  ~/projects/skill-improve-quality
+
+# 2. Symlink it into Claude Code's skills directory
+ln -s ~/projects/skill-improve-quality ~/.claude/skills/skill-improve-quality
+```
+
+If `~/.claude/skills/skill-improve-quality` already exists as a real directory (e.g., from a previous install), remove or rename it first — `ln -s` will not overwrite a directory.
+
+```bash
+rm -rf ~/.claude/skills/skill-improve-quality   # only if you're sure
+ln -s  ~/projects/skill-improve-quality ~/.claude/skills/skill-improve-quality
+```
+
+Verify the link:
+
+```bash
+ls -la ~/.claude/skills/skill-improve-quality
+# Should show: skill-improve-quality -> /home/<you>/projects/skill-improve-quality
+```
 
 ### 2. Verify the skill is loaded
 
@@ -66,14 +97,23 @@ If neither is installed, the skill falls back to Claude Code's built-in `WebSear
 
 ### 4. (Optional) Install the sibling skills
 
-`skill-improve-quality` works on its own. Findings are sharper when the two sibling authoring skills are also installed, because the skill can read their canonical "failure modes" lists:
+`skill-improve-quality` works on its own. Findings are sharper when the two sibling authoring skills are also installed, because the skill can read their canonical "failure modes" lists. Use the same Option A (direct clone) or Option B (symlink) pattern from step 1:
 
 ```bash
+# Option A — direct clone
 git clone https://github.com/jamesbuckett/skill-style-guide.git \
   ~/.claude/skills/skill-style-guide
 
 git clone https://github.com/jamesbuckett/skill-build-educational-site.git \
   ~/.claude/skills/skill-build-educational-site
+```
+
+```bash
+# Option B — workspace + symlink
+git clone https://github.com/jamesbuckett/skill-style-guide.git ~/projects/skill-style-guide
+git clone https://github.com/jamesbuckett/skill-build-educational-site.git ~/projects/skill-build-educational-site
+ln -s ~/projects/skill-style-guide            ~/.claude/skills/skill-style-guide
+ln -s ~/projects/skill-build-educational-site ~/.claude/skills/skill-build-educational-site
 ```
 
 ## Usage
