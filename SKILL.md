@@ -71,6 +71,19 @@ Split the work across two tools by their strength:
 
 Use them as a pipeline: Exa surfaces URLs → Firecrawl extracts markdown → dossier. Do not extract every Exa result; triage to the 3–5 most authoritative URLs first, then extract those.
 
+**Step 0 — Check the cache.** Phase 2 is the most expensive phase. Before searching, check whether a recent dossier already exists for this topic:
+
+```bash
+~/.claude/skills/skill-improve-quality/scripts/dossier-cache.sh get <abs-path-to-index.html>
+```
+
+The script keys by the page's `<title>` + `<h1>`, hashes the pair to 16 hex chars, and stores entries at `~/.cache/improve-quality/dossiers/<hash>.json`. Entries younger than 14 days return the JSON; older or missing entries return `CACHE_MISS`.
+
+- **Cache hit:** save the returned JSON to `/tmp/improve-quality-dossier.json` (Phase 3 subagent 1 reads it from there), populate the dossier slots below from it, and skip directly to Phase 3.
+- **Cache miss:** continue with step 1.
+
+Override the TTL with `IMPROVE_QUALITY_TTL_DAYS`; override the cache location with `IMPROVE_QUALITY_CACHE_DIR`.
+
 1. **Search — Exa MCP Server.** Use Exa's `web_search_exa` tool to run 3–5 targeted queries:
    - The topic name + "specification" (find the primary spec)
    - The topic name + the regulator's name (find the authoritative regulatory page)
@@ -94,33 +107,77 @@ Use them as a pipeline: Exa surfaces URLs → Firecrawl extracts markdown → do
 
 The dossier is the ground truth Phase 3's factual checks compare against.
 
+3. **Store — cache the dossier.** Serialise the dossier slots above to JSON in this shape, write it to a tempfile, and store it in the cache so the next run on this topic is fast:
+
+```bash
+cat > /tmp/improve-quality-dossier.json <<'EOF'
+{
+  "topic": "<short topic name, e.g. 'FAPI 2.0'>",
+  "audience": "<exec | practitioner | learner>",
+  "current_version": {"name": "...", "effective_date": "YYYY-MM-DD", "url": "..."},
+  "clauses": [{"id": "...", "covers": "...", "url": "..."}],
+  "governing_bodies": [{"name": "...", "role": "...", "url": "..."}],
+  "quantitative_claims": [{"claim": "...", "value": "...", "url": "..."}],
+  "comparison_points": [{"vs": "...", "points": ["..."]}],
+  "primary_source_urls": ["..."]
+}
+EOF
+
+~/.claude/skills/skill-improve-quality/scripts/dossier-cache.sh put <abs-path-to-index.html> /tmp/improve-quality-dossier.json
+```
+
+Keep `/tmp/improve-quality-dossier.json` available — Phase 3's factual subagent reads it as context instead of receiving a long inline dossier in its prompt.
+
 ### Phase 3 — Analyze the four dimensions
 
-This phase benefits from parallelism — the four dimensions are independent and each takes time. **Spawn four subagents in parallel** (one per dimension) using the `Agent` tool with `subagent_type=Explore` for the read-heavy dimensions and `subagent_type=general-purpose` for the research-comparison dimension. Each subagent reads the file plus your dossier (pass the dossier as context in the prompt), returns its findings in a structured list.
+**Step 0 — Deterministic pre-passes.** Before spawning subagents, run the cheap deterministic checks. They produce structured findings the subagents can build on instead of rediscover.
+
+- **Vale (prose pre-pass).** If `vale` is on `PATH`, run it against the HTML using the bundled config:
+
+  ```bash
+  vale --config=~/.claude/skills/skill-improve-quality/references/vale/.vale.ini \
+       --output=JSON \
+       <abs-path-to-index.html> > /tmp/improve-quality-vale.json
+  ```
+
+  The config in `references/vale/` ships rules for tic words, marketing voice, hedge phrases, transition-adverb overuse, triplet padding, marketing prologues, and the "not only X but also Y" pattern. Each rule links back to the canonical `ai-slop.md` entry so the subagent can cite the rationale.
+
+  If `vale` is not installed (`command -v vale` returns nothing), skip — the prose subagent will run unaided. The skill never blocks on optional tooling; it degrades to the LLM-only path.
+
+**Step 1 — Parallel analysis.** Spawn four subagents in parallel using the `Agent` tool. Different dimensions need different agent types:
+
+- Dimension 1 (factual): `subagent_type=general-purpose` — may need follow-up web searches and reads `/tmp/improve-quality-dossier.json`.
+- Dimension 2 (clarity): `subagent_type=Explore` — read-only over the HTML.
+- Dimension 3 (prose): `subagent_type=Explore` — read-only, but pass `/tmp/improve-quality-vale.json` (if present) as input so it builds on Vale's findings instead of rediscovering tic words.
+- Dimension 4 (structural): `subagent_type=general-purpose` — needs the Playwright MCP browser tools for rendered-DOM checks. See `references/browser-structural-checks.md` for the full subagent prompt and the JS audit scripts.
+
+Each subagent reads the file plus its assigned context (dossier, Vale output, browser tools, or none), and returns its findings in a structured list.
 
 Pattern for each subagent prompt:
 
 > Read `<absolute-path-to-index.html>`. Your job is to identify findings in dimension `<X>`. Return a list of findings, each with: severity (critical/major/minor), location (section heading + a short quote of the offending text), problem (one sentence), suggested fix (concrete replacement text or specific change), rationale (why this is a problem — reference the pattern, the source, or the comprehension issue), and source (URL if web-verifiable). Be specific. Don't return findings you can't quote.
 
-Pass the relevant slice of the dossier to subagent 1 (factual). Subagents 2–4 don't need the dossier.
+Pass `/tmp/improve-quality-dossier.json` to subagent 1 (factual). If Vale ran, pass `/tmp/improve-quality-vale.json` to subagent 3 (prose). Subagents 2 and 4 read the HTML directly; subagent 4 additionally drives the Playwright MCP browser.
 
 The four prompts vary by dimension. See `references/checks.md` for the dimension-specific check list. The high-level shape:
 
 1. **Factual correctness** — Compare every numeric, regulatory, named-entity, or quantitative claim in the page against the dossier from Phase 2. Findings name what the page says, what the dossier says, and how to reconcile.
 2. **Clarity & comprehension** — Undefined acronyms on first use; sentences > 30 words; pronouns without clear antecedents; stacked nominalizations; paragraphs that need to be split; jargon the glossary doesn't define.
 3. **Professional prose** — AI-slop tells (see `references/ai-slop.md`); marketing voice ("leverage", "robust", "seamless", "cutting-edge"); tense/voice inconsistency; hedge phrases ("it's worth noting"); excessive transition adverbs ("moreover", "furthermore"); random bolding; triplet padding ("clear, concise, and comprehensive").
-4. **Structural quality** — Pattern compliance against `skill-style-guide` + `skill-build-educational-site`:
-   - Single accent color (no second brand accent introduced)
-   - Spacing uses `--space-*` tokens, not ad-hoc px values
-   - No emoji anywhere
-   - Personal branding row present
-   - TL;DR section leads, not buried
-   - Audience switcher present AND has practitioner-only content to switch to
-   - Glossary covers acronyms AND multi-word terms of art (not acronym-only)
-   - Comparisons live in a single side-by-side table, not split across sections
-   - Regulatory callouts have regime + clause + citation
-   - Primary-source URLs in "Further reading" (no Wikipedia, no vendor blogs)
-   - No marketing patterns (CTAs, hero animations, testimonial sections)
+4. **Structural quality** — Pattern compliance against `skill-style-guide` + `skill-build-educational-site`. This dimension runs two passes: source-level checks (CSS, HTML structure) and rendered-DOM checks via Playwright MCP (computed styles, switcher actually toggles, dark-mode actually flips). See `references/browser-structural-checks.md` for the rendered-pass prompt and JS audit scripts. The combined check list:
+   - Single accent colour — computed-style sample beats CSS grep, since accents set via JS or far from `:root` slip past source inspection (rendered DOM)
+   - Spacing uses `--space-*` tokens, not ad-hoc px values (source)
+   - No emoji anywhere — scan `document.body.innerText` for Unicode emoji codepoints (rendered DOM)
+   - Personal branding row present (source)
+   - TL;DR section leads, not buried (source)
+   - Audience switcher present AND actually toggles visible content when clicked (rendered DOM)
+   - Dark-mode toggle actually flips `data-theme` AND changes the computed `background-color` (rendered DOM)
+   - No JS console errors when the page loads (rendered DOM)
+   - Glossary covers acronyms AND multi-word terms of art (source)
+   - Comparisons live in a single side-by-side table, not split across sections (source)
+   - Regulatory callouts have regime + clause + citation (source)
+   - Primary-source URLs in "Further reading" — no Wikipedia, no vendor blogs (source)
+   - No marketing patterns: CTAs, hero animations, testimonial sections (source)
 
 Collect all four returns into one unified findings list.
 

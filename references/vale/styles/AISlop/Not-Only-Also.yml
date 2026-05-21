@@ -1,0 +1,7 @@
+extends: existence
+message: "'Not only X but also Y' — usually rewrites to 'X and Y'"
+level: suggestion
+ignorecase: true
+link: "https://github.com/jamesbuckett/skill-improve-quality/blob/main/references/ai-slop.md#not-only-x-but-also-y"
+tokens:
+  - 'not only\s+\S.{0,80}?\s+but also'

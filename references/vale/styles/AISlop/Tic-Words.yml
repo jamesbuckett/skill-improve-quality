@@ -1,0 +1,29 @@
+extends: existence
+message: "Tic word: '%s' — reach for a more specific verb or cut entirely"
+level: warning
+ignorecase: true
+link: "https://github.com/jamesbuckett/skill-improve-quality/blob/main/references/ai-slop.md#tic-words-and-phrases"
+tokens:
+  - leverage
+  - leverages
+  - leveraged
+  - leveraging
+  - delve into
+  - delves into
+  - delved into
+  - delving into
+  - dive into
+  - dives into
+  - diving into
+  - dive deep
+  - robust
+  - seamless
+  - seamlessly
+  - comprehensive
+  - vibrant
+  - tapestry of
+  - mosaic of
+  - paradigm shift
+  - the landscape of
+  - the realm of
+  - the world of

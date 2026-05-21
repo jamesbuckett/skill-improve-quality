@@ -1,0 +1,18 @@
+extends: existence
+message: "Marketing voice: '%s' — name the actual property instead"
+level: error
+ignorecase: true
+link: "https://github.com/jamesbuckett/skill-improve-quality/blob/main/references/ai-slop.md#tic-words-and-phrases"
+tokens:
+  - cutting-edge
+  - revolutionary
+  - game-changing
+  - streamlined
+  - unlock the potential
+  - unlock potential
+  - harness the power of
+  - empower users to
+  - empower teams to
+  - empower developers to
+  - empower organisations to
+  - empower organizations to

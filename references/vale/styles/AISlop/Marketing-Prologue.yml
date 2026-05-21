@@ -1,0 +1,14 @@
+extends: existence
+message: "Marketing prologue: '%s' — delete; the TL;DR should be the first content"
+level: error
+ignorecase: true
+link: "https://github.com/jamesbuckett/skill-improve-quality/blob/main/references/ai-slop.md#marketing-prologue"
+tokens:
+  - "in today's fast-paced"
+  - "in the modern landscape"
+  - "in the rapidly evolving"
+  - 'as organi[sz]ations navigate'
+  - 'with the increasing demand for'
+  - 'modern enterprises face'
+  - 'in the digital age'
+  - 'in the era of'

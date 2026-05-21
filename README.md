@@ -92,14 +92,20 @@ What skills are available?
 
 ### 3. (Recommended) Install the optional dependencies
 
-The skill grades best when it can ground findings in primary sources. Two optional tools sharpen Phase 2 (research) considerably:
+The skill grades best when it can ground findings in primary sources and run deterministic pre-passes against the rendered page. Four optional tools sharpen the workflow:
 
-| Tool | What it adds | How to install |
-|---|---|---|
-| Exa MCP server | Neural search that ranks primary specs and regulator pages over vendor blogs. | Configure as a Claude Code MCP server. See the [Exa MCP server docs](https://github.com/exa-labs/exa-mcp-server) for the API-key and registration steps. |
-| Firecrawl Claude Code plugin | Clean markdown extraction from JS-rendered specs, regulator portals, and authenticated docs. The skill uses `firecrawl-scrape`, `firecrawl-instruct`, and `firecrawl-crawl`. | Install via Claude Code's `/plugin` command (`/plugin marketplace add`, then `/plugin install`). |
+| Tool | Phase | What it adds | How to install |
+|---|---|---|---|
+| Exa MCP server | Phase 2 (research) | Neural search that ranks primary specs and regulator pages over vendor blogs. | Configure as a Claude Code MCP server. See the [Exa MCP server docs](https://github.com/exa-labs/exa-mcp-server) for the API-key and registration steps. |
+| Firecrawl Claude Code plugin | Phase 2 (research) | Clean markdown extraction from JS-rendered specs, regulator portals, and authenticated docs. The skill uses `firecrawl-scrape`, `firecrawl-instruct`, and `firecrawl-crawl`. | Install via Claude Code's `/plugin` command (`/plugin marketplace add`, then `/plugin install`). |
+| Vale | Phase 3 (prose pre-pass) | Deterministic lint of tic words, marketing voice, hedge phrases, transition-adverb overuse, triplet padding, marketing prologues. The skill ships rules in `references/vale/`. | `brew install vale` (macOS) · `apt install vale` (Debian/Ubuntu) · [other platforms](https://vale.sh/docs/install). |
+| Playwright MCP | Phase 3 (structural) | Renders the page and runs DOM checks: computed accent-colour count, emoji in visible text, audience-switcher click-assert, dark-mode toggle click-assert, console-error capture. | Usually installed with Claude Code by default. Confirm by running a Claude Code session and checking that `browser_navigate` is available. |
 
-If neither is installed, the skill falls back to Claude Code's built-in `WebSearch` and `WebFetch`. The quality bar stays the same — primary sources only — but the surface area Claude can reach is smaller, especially on JS-rendered regulator pages.
+If none are installed, the skill falls back to Claude Code's built-in `WebSearch`/`WebFetch` and an LLM-only Phase 3. The quality bar stays the same — primary sources only, same dimensions checked — but the rendered-DOM checks and the deterministic prose lint are skipped.
+
+#### Dossier cache
+
+Phase 2 research is cached at `~/.cache/improve-quality/dossiers/` keyed by the page's `<title>` + `<h1>`. Entries are reused for 14 days; second runs on the same page in that window skip the expensive search-and-extract step entirely. Override via `IMPROVE_QUALITY_CACHE_DIR` and `IMPROVE_QUALITY_TTL_DAYS`. Clear it manually with `rm -rf ~/.cache/improve-quality/dossiers/`.
 
 ### 4. (Optional) Install the sibling skills
 
@@ -182,15 +188,28 @@ The skill cross-references two sibling skills that define the patterns being che
 
 ```text
 .
-├── SKILL.md             # Skill frontmatter, four-phase workflow, guardrails
+├── SKILL.md                              # Frontmatter, four-phase workflow, guardrails
+├── scripts/
+│   └── dossier-cache.sh                  # Phase 2 dossier cache (get/put/key, 14-day TTL)
 ├── references/
-│   ├── checks.md        # Per-dimension check list with example findings
-│   └── ai-slop.md       # Tic words, hedge phrases, structural slop patterns
+│   ├── checks.md                         # Per-dimension check list with example findings
+│   ├── ai-slop.md                        # Tic words, hedge phrases, structural slop patterns
+│   ├── browser-structural-checks.md      # Playwright MCP audit scripts for Dimension 4
+│   └── vale/
+│       ├── .vale.ini                     # Vale config (loads the AISlop style)
+│       └── styles/AISlop/                # One YAML rule per ai-slop.md pattern
+│           ├── Tic-Words.yml
+│           ├── Marketing-Voice.yml
+│           ├── Hedge-Phrases.yml
+│           ├── Transition-Adverbs.yml
+│           ├── Triplet-Padding.yml
+│           ├── Marketing-Prologue.yml
+│           └── Not-Only-Also.yml
 └── evals/
-    └── evals.json       # Test prompts used during skill development
+    └── evals.json                        # Test prompts used during skill development
 ```
 
-`SKILL.md` is loaded on every invocation. The files in `references/` are loaded on demand during Phase 3.
+`SKILL.md` is loaded on every invocation. The files in `references/` are loaded on demand during Phase 3. The `scripts/` and `references/vale/` directories are invoked from `SKILL.md` via shell commands; no skill metadata loads them.
 
 ## Troubleshooting
 

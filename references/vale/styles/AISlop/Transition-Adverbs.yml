@@ -1,0 +1,8 @@
+extends: occurrence
+message: "Transition adverb '%s' used more than once per paragraph — usually paragraph glue, not signal"
+level: warning
+scope: paragraph
+ignorecase: true
+max: 1
+link: "https://github.com/jamesbuckett/skill-improve-quality/blob/main/references/ai-slop.md#transition-adverbs-as-filler"
+token: '\b(moreover|furthermore|additionally|consequently|subsequently|notably|importantly)\b'

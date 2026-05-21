@@ -150,6 +150,8 @@ Pattern compliance against `skill-style-guide` (visual chassis) and `skill-build
 
 The check list below is the union of both sibling skills' "Failure modes to avoid" sections. Read those files for the canonical phrasing if installed.
 
+> **Rendered-DOM pass.** Several checks here (single accent colour, no emoji, audience switcher actually toggles content, dark-mode toggle actually flips theme, no JS console errors) are stronger when run against the rendered page rather than the HTML source. The Dimension 4 subagent uses Playwright MCP to drive a real browser; see `browser-structural-checks.md` for the audit-script library and subagent prompt. Source-level checks (spacing tokens, TL;DR ordering, glossary contents, comparison-table consolidation, primary sources) still run from the file.
+
 ### Categories
 
 **Visual chassis (skill-style-guide)**

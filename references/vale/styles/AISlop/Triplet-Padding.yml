@@ -1,0 +1,13 @@
+extends: existence
+message: "Triplet padding: '%s' — pick the strongest of the three"
+level: warning
+ignorecase: true
+link: "https://github.com/jamesbuckett/skill-improve-quality/blob/main/references/ai-slop.md#triplet-padding"
+tokens:
+  - 'clear,?\s+concise,?\s+(?:and\s+)?comprehensive'
+  - 'secure,?\s+scalable,?\s+(?:and\s+)?reliable'
+  - 'robust,?\s+performant,?\s+(?:and\s+)?maintainable'
+  - 'auditable,?\s+transparent,?\s+(?:and\s+)?verifiable'
+  - 'fast,?\s+cheap,?\s+(?:and\s+)?reliable'
+  - 'simple,?\s+elegant,?\s+(?:and\s+)?powerful'
+  - 'safe,?\s+secure,?\s+(?:and\s+)?compliant'
