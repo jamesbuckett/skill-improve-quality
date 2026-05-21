@@ -63,7 +63,7 @@ Targets the moments a reader has to stop, re-read, or guess. Each finding quotes
 
 **Multi-word terms of art**
 - Multi-word phrases the page leans on heavily (e.g., "tokenization", "trust domain", "sender-constrained token", "workload identity") that aren't defined in the glossary
-- This is a specific failure mode `build-educational-site` calls out — glossary is acronym-only and skips the load-bearing multi-word concepts
+- This is a specific failure mode `skill-build-educational-site` calls out — glossary is acronym-only and skips the load-bearing multi-word concepts
 
 **Runaway sentences**
 - Sentences > 30 words that would benefit from being split
@@ -146,13 +146,13 @@ Fix:      "This approach uses tokenization to replace stored card numbers with n
 
 ## Dimension 4 — Structural quality
 
-Pattern compliance against `style-guide` (visual chassis) and `build-educational-site` (content architecture). Findings here name the rule and the deviation.
+Pattern compliance against `skill-style-guide` (visual chassis) and `skill-build-educational-site` (content architecture). Findings here name the rule and the deviation.
 
 The check list below is the union of both sibling skills' "Failure modes to avoid" sections. Read those files for the canonical phrasing if installed.
 
 ### Categories
 
-**Visual chassis (style-guide)**
+**Visual chassis (skill-style-guide)**
 - **Single accent color** — Count distinct accent uses. The page should have exactly one brand accent. State colors (success/warn/danger) are separate and only appear when content conveys actual state.
 - **Spacing tokens** — Spot-check CSS for ad-hoc values like `padding: 17px`, `margin-top: 30px`. Should use `--space-1` through `--space-9`.
 - **No emoji** — Search the rendered output for any Unicode emoji codepoints. Replace with Lucide SVG.
@@ -161,7 +161,7 @@ The check list below is the union of both sibling skills' "Failure modes to avoi
 - **Dark-mode toggle present and working** — A theme toggle exists in the header; clicking it flips `data-theme` on `<html>`.
 - **Marketing-page bloat on long-form pages** — A three-card feature grid or testimonial section on a page whose job is dense technical explanation.
 
-**Content architecture (build-educational-site)**
+**Content architecture (skill-build-educational-site)**
 - **TL;DR section leads** — The first content section is a TL;DR, not six paragraphs of intro. Failure mode: content padding.
 - **Audience switcher present AND wired** — If the page has practitioner-depth content, the switcher exists and toggles it. If the page has no practitioner-depth content, the switcher should NOT be shipped — a control that does nothing is the failure mode.
 - **Glossary covers acronyms AND multi-word terms** — Page uses "tokenization" or "trust domain" or "sender-constrained token" heavily? Each should be defined. Acronym-only glossaries are the named failure mode.

@@ -1,6 +1,6 @@
 {
-  "skill_name": "improve-quality",
-  "notes": "Test prompts that should trigger this skill. Running these end-to-end requires a fixture index.html with planted quality issues across the four dimensions (factual, clarity, prose, structural). See evals/fixtures/ for sample pages once created.",
+  "skill_name": "skill-improve-quality",
+  "notes": "Test prompts that should trigger this skill. Running these end-to-end requires a fixture index.html with planted quality issues across the four dimensions (factual, clarity, prose, structural).",
   "evals": [
     {
       "id": 1,

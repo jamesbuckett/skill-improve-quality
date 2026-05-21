@@ -1,10 +1,10 @@
 ---
-name: improve-quality
+name: skill-improve-quality
 description: >-
-  Audit and improve the quality of a single-file HTML explainer page (typically `index.html`) in the current repo. Checks four dimensions — factual correctness against authoritative web sources, clarity and comprehension, professional prose (AI-slop detection), and structural quality against James's `style-guide` + `build-educational-site` pattern — then produces an inline summary and offers to apply approved edits. Use this skill whenever the user wants to QA, audit, fact-check, polish, sharpen, review, critique, validate, tighten, or improve the quality of an explainer page, primer, one-pager, landing page, deep-dive, or single-file HTML — even when they don't use the exact phrase "improve quality". Triggers include "check this page", "is this accurate", "review the prose", "polish this", "audit this index.html", "fact-check this", "is the content correct", "is this clear enough", "sharpen this writing", "tighten this page", "QA the page", "is this professional", "/improve-quality", or any request that boils down to "make this page better without changing its purpose". Uses the Exa MCP server for web search and the Firecrawl plugin for extracting web resources (with WebSearch/WebFetch as fallback) to ground findings in authoritative primary sources, not blog posts or vendor marketing.
+  Audit and improve the quality of a single-file HTML explainer page (typically `index.html`) in the current repo. Checks four dimensions — factual correctness against authoritative web sources, clarity and comprehension, professional prose (AI-slop detection), and structural quality against James's `skill-style-guide` + `skill-build-educational-site` pattern — then produces an inline summary and offers to apply approved edits. Use this skill whenever the user wants to QA, audit, fact-check, polish, sharpen, review, critique, validate, tighten, or improve the quality of an explainer page, primer, one-pager, landing page, deep-dive, or single-file HTML — even when they don't use the exact phrase "improve quality". Triggers include "check this page", "is this accurate", "review the prose", "polish this", "audit this index.html", "fact-check this", "is the content correct", "is this clear enough", "sharpen this writing", "tighten this page", "QA the page", "is this professional", "/skill-improve-quality", or any request that boils down to "make this page better without changing its purpose". Uses the Exa MCP server for web search and the Firecrawl plugin for extracting web resources (with WebSearch/WebFetch as fallback) to ground findings in authoritative primary sources, not blog posts or vendor marketing.
 ---
 
-# improve-quality
+# skill-improve-quality
 
 ## What this skill does
 
@@ -13,13 +13,13 @@ Takes a finished `index.html` page in the current repo and improves its quality 
 1. **Factual correctness** — every load-bearing claim (regulatory clause, version number, date, statistic, named entity) is verified against authoritative web sources.
 2. **Clarity & comprehension** — undefined jargon, ambiguous pronouns, runaway sentences, dense paragraphs the reader can't parse on first pass.
 3. **Professional prose** — AI-slop tells, marketing voice, tense and voice inconsistency, hedge phrases, tic words.
-4. **Structural quality** — adherence to the `style-guide` (visual chassis) and `build-educational-site` (content architecture) patterns; failure modes those skills are explicitly trying to prevent.
+4. **Structural quality** — adherence to the `skill-style-guide` (visual chassis) and `skill-build-educational-site` (content architecture) patterns; failure modes those skills are explicitly trying to prevent.
 
 The output is a single inline report grouped by severity, then an interactive pass where you approve or reject each fix. Approved fixes are applied via `Edit` to `index.html`. Nothing is changed without consent.
 
 ## When to use this skill
 
-This skill exists because the user produces educational pages with two sibling skills (`style-guide` and `build-educational-site`) and wants a deliberate QA pass afterwards — separate from authoring, with its own discipline. Don't fold the checks into authoring; the page is too close to the author at that point. Treat this skill as a fresh pair of eyes.
+This skill exists because the user produces educational pages with two sibling skills (`skill-style-guide` and `skill-build-educational-site`) and wants a deliberate QA pass afterwards — separate from authoring, with its own discipline. Don't fold the checks into authoring; the page is too close to the author at that point. Treat this skill as a fresh pair of eyes.
 
 Use it when:
 - The user just finished a page and wants to ship it.
@@ -29,15 +29,15 @@ Use it when:
 
 Skip when:
 - There's no HTML file to audit (this is not a generic prose-improvement skill).
-- The user wants you to write new content, not check existing content (use `build-educational-site` instead).
-- The user wants visual-only feedback (use `style-guide`'s screenshot loop).
+- The user wants you to write new content, not check existing content (use `skill-build-educational-site` instead).
+- The user wants visual-only feedback (use `skill-style-guide`'s screenshot loop).
 
 ## Composition with sibling skills
 
 The two sibling skills define the pattern; this skill checks compliance with it.
 
-- `style-guide` (~/.claude/skills/style-guide/SKILL.md) — visual chassis, palette, spacing, components, screenshot harness, accent-color discipline.
-- `build-educational-site` (~/.claude/skills/build-educational-site/SKILL.md) — section sequence, audience switcher, glossary discipline, comparison-table-as-single-table rule, regulatory callout shape.
+- `skill-style-guide` (~/.claude/skills/skill-style-guide/SKILL.md) — visual chassis, palette, spacing, components, screenshot harness, accent-color discipline.
+- `skill-build-educational-site` (~/.claude/skills/skill-build-educational-site/SKILL.md) — section sequence, audience switcher, glossary discipline, comparison-table-as-single-table rule, regulatory callout shape.
 
 If those skills are installed (the user has both), read their "Failure modes to avoid" sections to ground the structural checks in the canonical list. Both files are short and explicit. If they're not installed, the checks in `references/checks.md` are self-contained.
 
@@ -109,7 +109,7 @@ The four prompts vary by dimension. See `references/checks.md` for the dimension
 1. **Factual correctness** — Compare every numeric, regulatory, named-entity, or quantitative claim in the page against the dossier from Phase 2. Findings name what the page says, what the dossier says, and how to reconcile.
 2. **Clarity & comprehension** — Undefined acronyms on first use; sentences > 30 words; pronouns without clear antecedents; stacked nominalizations; paragraphs that need to be split; jargon the glossary doesn't define.
 3. **Professional prose** — AI-slop tells (see `references/ai-slop.md`); marketing voice ("leverage", "robust", "seamless", "cutting-edge"); tense/voice inconsistency; hedge phrases ("it's worth noting"); excessive transition adverbs ("moreover", "furthermore"); random bolding; triplet padding ("clear, concise, and comprehensive").
-4. **Structural quality** — Pattern compliance against `style-guide` + `build-educational-site`:
+4. **Structural quality** — Pattern compliance against `skill-style-guide` + `skill-build-educational-site`:
    - Single accent color (no second brand accent introduced)
    - Spacing uses `--space-*` tokens, not ad-hoc px values
    - No emoji anywhere
@@ -181,7 +181,7 @@ When applying:
 - Apply edits in a single batch where possible. Independent edits can be in parallel `Edit` calls in one message.
 - After applying, re-run a quick read-only sanity check on the affected sections — make sure the edit landed where intended and didn't introduce a new issue.
 
-If any structural fix changes visual layout (e.g., adding a missing glossary section, restructuring a comparison into a single table), tell the user the page should be re-screenshot via `style-guide`'s harness. Don't re-screenshot automatically — that's a separate verification step the user runs.
+If any structural fix changes visual layout (e.g., adding a missing glossary section, restructuring a comparison into a single table), tell the user the page should be re-screenshot via `skill-style-guide`'s harness. Don't re-screenshot automatically — that's a separate verification step the user runs.
 
 ## Tips and guardrails
 
@@ -189,7 +189,7 @@ If any structural fix changes visual layout (e.g., adding a missing glossary sec
 - **Quote, don't paraphrase, the offending text.** Findings without exact quotes are hard to act on. If you can't quote it, you don't have a finding.
 - **Don't invent failure modes.** The check list lives in `references/checks.md` and the sibling skills. Don't add new checks for hypothetical issues just because they sound clever.
 - **Lean on the user's judgement on minor findings.** Style is partly personal. Tic words used once aren't a fire; tic words on every page are. Flag, don't enforce.
-- **Don't refactor.** The skill's job is improving content quality, not restructuring the page. If a section needs a wholesale rewrite, say so as a finding and let the user decide whether to invoke `build-educational-site` instead.
+- **Don't refactor.** The skill's job is improving content quality, not restructuring the page. If a section needs a wholesale rewrite, say so as a finding and let the user decide whether to invoke `skill-build-educational-site` instead.
 - **Web research is the differentiator.** Skipping Phase 2 reduces this skill to a stylistic linter. The deep topic expansion is the reason this skill exists — don't shortcut it.
 
 ## Failure modes to avoid
@@ -197,7 +197,7 @@ If any structural fix changes visual layout (e.g., adding a missing glossary sec
 - **Drive-by stylistic preferences** — "I prefer shorter sentences" is not a finding. The page either has a clarity problem (a sentence that takes two reads to parse) or it doesn't. Don't flag your own taste.
 - **Fact-check theater** — Searching for sources and not actually comparing what they say. Every factual finding must include a side-by-side: what the page says vs. what the source says.
 - **AI-slop over-detection** — Em-dashes are not always slop; the user's other skills use them deliberately. Flag patterns, not single instances. Three "leverages" in one section is a finding; one "leverage" in five thousand words is not.
-- **Structural nit-picking** — If `build-educational-site` says "no marketing CTAs" and the page has no CTAs, that's not a finding. Findings name actual deviations, not hypothetical compliance.
+- **Structural nit-picking** — If `skill-build-educational-site` says "no marketing CTAs" and the page has no CTAs, that's not a finding. Findings name actual deviations, not hypothetical compliance.
 - **Reporting without applying** — The user chose "report + propose edits". Stopping after Phase 4 leaves the work undone. Always run Phase 5 unless the user opts out.
 - **Applying without quoting** — Edits without exact-text matches break files. If `Edit` fails because `old_string` isn't unique, fix the quote — don't `replace_all` blindly.
 
