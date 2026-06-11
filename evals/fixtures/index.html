@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAPI 2.0 — Financial-grade API Security</title>
+<style>
+  /* PLANTED S6a: --bg defined but body uses hard-coded hex, so dark mode never flips the background */
+  :root {
+    --bg: #fafaf9;
+    --text: #1c1917;
+    --accent: #2563eb;
+    --space-2: 8px;
+    --space-4: 16px;
+    --space-6: 32px;
+  }
+  [data-theme="dark"] {
+    --bg: #1c1917;
+    --text: #fafaf9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Noto Sans", system-ui, sans-serif;
+    background: #fafaf9; /* PLANTED S6b: hex outside :root — should be var(--bg) */
+    color: var(--text);
+    max-width: 860px;
+    margin: 0 auto;
+    padding: var(--space-4);
+    line-height: 1.6;
+  }
+  h1, h2 { color: var(--accent); }
+  a { color: var(--accent); }
+  a:hover { color: #3b82f6; } /* tint of the accent — must NOT count as a second accent */
+  .btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  /* PLANTED S1: second accent — purple used on five component families */
+  .callout { border-left: 4px solid #7c3aed; background: rgba(124, 58, 237, 0.08); padding: 17px; margin-top: 30px; } /* PLANTED S4: ad-hoc px spacing */
+  .callout h3 { color: #7c3aed; }
+  th { background: #7c3aed; color: #fff; }
+  .tag { color: #7c3aed; border: 1px solid #7c3aed; border-radius: 4px; padding: 2px 6px; font-size: 0.8em; }
+  /* PLANTED S3: emoji injected via pseudo-element — invisible to innerText scans */
+  .zap::before { content: "⚡ "; }
+  .branding { display: flex; gap: var(--space-4); align-items: center; padding: var(--space-2) 0; border-bottom: 1px solid #d6d3d1; }
+  .branding svg { width: 18px; height: 18px; vertical-align: middle; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { border: 1px solid #d6d3d1; padding: var(--space-2); text-align: left; }
+  dl dt { font-weight: 600; margin-top: var(--space-2); }
+</style>
+</head>
+<body>
+
+<header class="branding">
+  <strong>James Buckett</strong>
+  <a href="https://github.com/jamesbuckett" aria-label="GitHub"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></svg></a>
+  <a href="https://x.com/jamesbuckett" aria-label="Twitter/X"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></a>
+  <a href="https://linkedin.com/in/jamesbuckett" aria-label="LinkedIn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+  <span style="margin-left:auto">
+    <button class="btn" id="audience-toggle">Practitioner view</button>
+    <button class="btn" id="theme-toggle" aria-label="Toggle dark theme">Theme</button>
+  </span>
+</header>
+
+<!-- PLANTED S2: emoji in heading text -->
+<h1>🔐 FAPI 2.0 — Financial-grade API Security</h1>
+
+<!-- PLANTED P1 + S9: marketing prologue where the TL;DR should be; no TL;DR section anywhere -->
+<p>In today's rapidly evolving digital landscape, financial institutions face unprecedented challenges in securing their API estates. As organisations navigate the complexities of open banking, the need for a robust, scalable, and seamless security profile has never been greater. <!-- PLANTED P5: triplet padding --> This page explores how FAPI 2.0 not only hardens the authorisation layer but also simplifies conformance for implementers. <!-- PLANTED P6: not only / but also --></p>
+
+<h2 class="zap">Why FAPI exists</h2>
+<p>Plain OAuth 2.0 was designed for delegation, not for high-stakes financial transactions — its default profile leaves too many decisions to implementers. FAPI narrows those choices. Banks leverage FAPI to lock down token endpoints, fintechs leverage it to pass conformance suites, and regulators leverage it as a baseline they can point to. <!-- PLANTED P2: leverage ×3 in one section --></p>
+<p>It's worth noting that FAPI 2.0 replaces the two-part FAPI 1.0 (Baseline and Advanced) with a single profile. <!-- PLANTED P3: hedge phrase --> The FAPI 2.0 Security Profile reached final status at the OpenID Foundation in 2022. <!-- PLANTED F2: wrong — Final was approved in February 2025 --></p>
+
+<h2>Mechanics</h2>
+<p>The PDP evaluates each request against the policy bundle before the resource server ever sees it. <!-- PLANTED C1: PDP never expanded, not in glossary --> Sender-constrained tokens bind the access token to the client's key, which means a stolen token is useless to anyone who does not also hold the private key, and this binding is enforced at the resource server on every single call rather than only at issuance time, so interception alone never yields a usable credential, even when TLS termination happens at an intermediary the bank does not control. <!-- PLANTED C2: 60+ word runaway sentence --></p>
+<p>This is critical for auditors. <!-- PLANTED C3: ambiguous antecedent — "this" what? --> The implementation of the validation of the configuration of token endpoints remains the operator's responsibility. <!-- PLANTED C4: stacked nominalisations --></p>
+<p>Moreover, FAPI 2.0 mandates pushed authorisation requests. Furthermore, it requires PKCE for all clients. Additionally, it forbids bearer tokens at the resource server. <!-- PLANTED P4: transition-adverb stack --></p>
+
+<!-- PLANTED S7: FAPI 1.0 vs 2.0 comparison split across two prose sections instead of one table -->
+<h2>Background: FAPI 1.0</h2>
+<p>FAPI 1.0 shipped as two profiles. Baseline covered read-only access with standard OAuth flows. Advanced added JARM, private_key_jwt client authentication, and PAR for read-write access. Conformance required choosing the right profile per use case, which implementers routinely got wrong.</p>
+
+<h2>What changed in 2.0</h2>
+<p>FAPI 2.0 collapses the two profiles into one. It mandates PAR universally, requires sender-constrained tokens via DPoP or mutual TLS, and drops the JARM requirement in the base profile. The attacker model is now a separate, formally analysed document.</p>
+
+<div class="callout">
+  <h3>Regulatory context <span class="tag">DORA</span></h3>
+  <p>DORA Article 28 mandates that financial entities report major ICT-related incidents within 4 hours of classification. <!-- PLANTED F1: wrong article — incident reporting is Article 17/19; Article 28 is third-party risk --> Under PSD2, strong customer authentication applies to most electronic payments — the underlying RTS leaves the API security profile to the market, which is where FAPI slots in.</p>
+</div>
+
+<h2>Relationship to OAuth 2.1</h2>
+<p>OAuth 2.1 was published as RFC 9700 in 2023. <!-- PLANTED F3: wrong — RFC 9700 is the OAuth 2.0 Security BCP (Jan 2025); OAuth 2.1 remains an Internet-Draft --> FAPI 2.0 builds on the same hardening direction: PKCE everywhere, no implicit grant, exact redirect URI matching. Credentials are rotated according to the operator's policy — the standard does not prescribe a rotation interval. <!-- correct passive voice; must NOT be flagged --></p>
+<p>Card-side standards moved in parallel: PCI-DSS v4.0 is the current version of the card data standard. <!-- PLANTED F4: wrong — v4.0.1 superseded v4.0 in June 2024 and v4.0 was retired on 31 December 2024 --></p>
+
+<h2>Glossary</h2>
+<!-- PLANTED S8: acronym-only glossary — "sender-constrained token" used 3× above but never defined; PDP missing entirely -->
+<dl>
+  <dt>PAR</dt><dd>Pushed Authorization Requests (RFC 9126) — the client posts the authorisation request directly to the server before redirecting.</dd>
+  <dt>PKCE</dt><dd>Proof Key for Code Exchange (RFC 7636) — binds the authorisation code to the client that requested it.</dd>
+  <dt>DPoP</dt><dd>Demonstrating Proof of Possession (RFC 9449) — application-layer sender-constraining of tokens.</dd>
+  <dt>JARM</dt><dd>JWT Secured Authorization Response Mode — signs authorisation responses.</dd>
+</dl>
+
+<h2>Further reading</h2>
+<ul>
+  <li><a href="https://openid.net/specs/fapi-security-profile-2_0-final.html">FAPI 2.0 Security Profile — OpenID Foundation</a></li>
+  <li><a href="https://eur-lex.europa.eu/eli/reg/2022/2554/oj">Regulation (EU) 2022/2554 (DORA) — EUR-Lex</a></li>
+  <li><a href="https://nonexistent.invalid/fapi-implementation-guide">FAPI implementation guide</a> <!-- PLANTED F5: dead link --></li>
+  <li><a href="https://en.wikipedia.org/wiki/OAuth">OAuth — Wikipedia</a> <!-- PLANTED S10: Wikipedia in Further reading (reachable, so the policy check is independent of the dead-link check) --></li>
+</ul>
+
+<script>
+  // PLANTED S5: switcher is wired to a body class but no .practitioner-only elements exist — it toggles nothing
+  document.getElementById('audience-toggle').addEventListener('click', () => {
+    document.body.classList.toggle('practitioner');
+  });
+  // Theme toggle flips data-theme, but body background is hard-coded so the page never visibly changes (S6)
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    const html = document.documentElement;
+    html.dataset.theme = html.dataset.theme === 'dark' ? '' : 'dark';
+  });
+</script>
+
+</body>
+</html>

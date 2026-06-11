@@ -42,9 +42,9 @@ The skill returns a single inline report grouped by severity, then walks through
 ```
 .
 ├── SKILL.md         # Skill metadata and execution flow
-├── evals/           # Evaluation cases
+├── evals/           # Eval prompts, planted-issues fixture + answer key, browser-audit harness
 ├── references/      # AI-slop checks, structural checks, Vale config
-└── scripts/         # Dossier cache helper
+└── scripts/         # Dossier cache, link checker, browser audit scripts (audits/)
 ```
 
 ## Contributing

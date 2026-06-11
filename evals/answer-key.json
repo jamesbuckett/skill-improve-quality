@@ -1,0 +1,43 @@
+{
+  "fixture": "evals/fixtures/index.html",
+  "notes": "Each planted issue is marked with an HTML comment 'PLANTED <id>' in the fixture. A correct audit finds the issue WITHOUT reading the comments (strip them before the run if scoring strictly: sed 's/<!--[^>]*-->//g'). Severity may differ by one level from 'expected_severity' without counting as a miss. The lint-html hook from skill-build-educational-site firing on this file is expected — the fixture deliberately violates its checklist.",
+  "scoring": {
+    "recall": "found_planted / 25 — a planted issue counts as found if the report quotes or locates the offending text and names the same problem",
+    "false_positives": "any finding that flags a negative control below counts against precision",
+    "target": "recall >= 0.80 with zero negative-control violations"
+  },
+  "planted": [
+    {"id": "F1", "dimension": "factual", "expected_severity": "critical", "location": "Regulatory context callout", "quote": "DORA Article 28 mandates that financial entities report major ICT-related incidents within 4 hours", "expected_finding": "Wrong article — incident reporting is DORA Article 17 (and Article 19 for reporting to authorities); Article 28 covers ICT third-party risk", "verify_against": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj"},
+    {"id": "F2", "dimension": "factual", "expected_severity": "critical", "location": "Why FAPI exists", "quote": "The FAPI 2.0 Security Profile reached final status at the OpenID Foundation in 2022", "expected_finding": "Wrong date — FAPI 2.0 Security Profile and Attacker Model were approved as Final specifications in February 2025", "verify_against": "https://openid.net/specs/fapi-security-profile-2_0-final.html"},
+    {"id": "F3", "dimension": "factual", "expected_severity": "critical", "location": "Relationship to OAuth 2.1", "quote": "OAuth 2.1 was published as RFC 9700 in 2023", "expected_finding": "RFC 9700 is the OAuth 2.0 Security Best Current Practice (January 2025); OAuth 2.1 remains an Internet-Draft, not an RFC", "verify_against": "https://www.rfc-editor.org/rfc/rfc9700"},
+    {"id": "F4", "dimension": "factual", "expected_severity": "major", "location": "Relationship to OAuth 2.1", "quote": "PCI-DSS v4.0 is the current version", "expected_finding": "PCI DSS v4.0.1 superseded v4.0 in June 2024; v4.0 was retired on 31 December 2024", "verify_against": "https://www.pcisecuritystandards.org/"},
+    {"id": "F5", "dimension": "factual", "expected_severity": "critical", "location": "Further reading", "quote": "https://nonexistent.invalid/fapi-implementation-guide", "expected_finding": "Dead link — domain does not resolve"},
+    {"id": "C1", "dimension": "clarity", "expected_severity": "major", "location": "Mechanics", "quote": "The PDP evaluates each request against the policy bundle", "expected_finding": "PDP never expanded on first use and absent from the glossary"},
+    {"id": "C2", "dimension": "clarity", "expected_severity": "major", "location": "Mechanics", "quote": "Sender-constrained tokens bind the access token to the client's key, which means...", "expected_finding": "Runaway sentence (60+ words, 5 clauses) — needs splitting"},
+    {"id": "C3", "dimension": "clarity", "expected_severity": "major", "location": "Mechanics", "quote": "This is critical for auditors.", "expected_finding": "Ambiguous antecedent — 'this' has no clear referent at a paragraph boundary"},
+    {"id": "C4", "dimension": "clarity", "expected_severity": "minor", "location": "Mechanics", "quote": "The implementation of the validation of the configuration of token endpoints", "expected_finding": "Stacked nominalisations — rewrite as 'validating how token endpoints are configured'"},
+    {"id": "P1", "dimension": "prose", "expected_severity": "critical", "location": "Opening paragraph", "quote": "In today's rapidly evolving digital landscape", "expected_finding": "Marketing prologue — generic urgency opener where the TL;DR should be"},
+    {"id": "P2", "dimension": "prose", "expected_severity": "major", "location": "Why FAPI exists", "quote": "Banks leverage FAPI... fintechs leverage it... regulators leverage it", "expected_finding": "Tic word — 'leverage' three times in one section"},
+    {"id": "P3", "dimension": "prose", "expected_severity": "minor", "location": "Why FAPI exists", "quote": "It's worth noting that FAPI 2.0 replaces", "expected_finding": "Hedge phrase — delete, start with the statement"},
+    {"id": "P4", "dimension": "prose", "expected_severity": "major", "location": "Mechanics", "quote": "Moreover, FAPI 2.0 mandates... Furthermore, it requires... Additionally, it forbids", "expected_finding": "Transition-adverb stack — three filler transitions in one paragraph"},
+    {"id": "P5", "dimension": "prose", "expected_severity": "major", "location": "Opening paragraph", "quote": "a robust, scalable, and seamless security profile", "expected_finding": "Triplet padding plus marketing adjectives"},
+    {"id": "P6", "dimension": "prose", "expected_severity": "minor", "location": "Opening paragraph", "quote": "not only hardens the authorisation layer but also simplifies conformance", "expected_finding": "'Not only X but also Y' — no real tension between X and Y; use 'and'"},
+    {"id": "S1", "dimension": "structural", "expected_severity": "critical", "location": "CSS / rendered page", "quote": "#7c3aed on .callout, .callout h3, th, .tag", "expected_finding": "Second accent colour — purple used across five component families alongside the blue accent"},
+    {"id": "S2", "dimension": "structural", "expected_severity": "critical", "location": "H1", "quote": "🔐 FAPI 2.0", "expected_finding": "Emoji in rendered body text — replace with Lucide SVG"},
+    {"id": "S3", "dimension": "structural", "expected_severity": "critical", "location": "CSS .zap::before", "quote": "content: \"⚡ \"", "expected_finding": "Emoji injected via CSS pseudo-element — not visible to innerText scans, requires pseudo-element audit"},
+    {"id": "S4", "dimension": "structural", "expected_severity": "major", "location": "CSS .callout", "quote": "padding: 17px; margin-top: 30px", "expected_finding": "Ad-hoc px values instead of --space-* tokens"},
+    {"id": "S5", "dimension": "structural", "expected_severity": "critical", "location": "Header / script", "quote": "audience-toggle button", "expected_finding": "Audience switcher present but no .practitioner-only elements exist — clicking it changes nothing visible"},
+    {"id": "S6", "dimension": "structural", "expected_severity": "critical", "location": "CSS body / theme script", "quote": "background: #fafaf9", "expected_finding": "Dark-mode toggle flips data-theme but body background is a hard-coded hex outside :root, so the computed background never changes"},
+    {"id": "S7", "dimension": "structural", "expected_severity": "major", "location": "Background: FAPI 1.0 / What changed in 2.0", "quote": "two separate prose sections", "expected_finding": "FAPI 1.0 vs 2.0 comparison split across sections — consolidate into a single side-by-side table"},
+    {"id": "S8", "dimension": "structural", "expected_severity": "major", "location": "Glossary", "quote": "PAR, PKCE, DPoP, JARM", "expected_finding": "Acronym-only glossary — 'sender-constrained token' used three times and PDP used once, neither defined"},
+    {"id": "S9", "dimension": "structural", "expected_severity": "major", "location": "Page top", "quote": "no TL;DR section", "expected_finding": "Page opens with a prologue instead of a TL;DR section"},
+    {"id": "S10", "dimension": "structural", "expected_severity": "major", "location": "Further reading", "quote": "https://en.wikipedia.org/wiki/OAuth", "expected_finding": "Wikipedia in Further reading — primary sources only (the link is reachable; the problem is policy, not rot)"}
+  ],
+  "negative_controls": [
+    {"id": "N1", "rule": "Em-dashes are deliberate style — must not be flagged as slop"},
+    {"id": "N2", "rule": "British spellings (authorisation, organisations, analysed) — must not be flagged"},
+    {"id": "N3", "rule": "'Credentials are rotated according to the operator's policy' — correct passive voice in security writing, must not be flagged"},
+    {"id": "N4", "rule": "#3b82f6 hover tint is the same accent family as #2563eb — must not be counted as a second accent"},
+    {"id": "N5", "rule": "Personal branding row is correct — must not be changed"}
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "skill_name": "skill-improve-quality",
-  "notes": "Test prompts that should trigger this skill. Running these end-to-end requires a fixture index.html with planted quality issues across the four dimensions (factual, clarity, prose, structural).",
+  "notes": "Trigger evals (1-3) check the skill activates on realistic phrasings. The fixture eval (4) measures detection quality end-to-end against evals/fixtures/index.html, scored with evals/answer-key.json. Strip the 'PLANTED' HTML comments before a strict run so the agent can't read the answers: sed 's/<!--[^>]*-->//g' fixtures/index.html > /tmp/fixture-clean.html",
   "evals": [
     {
       "id": 1,
@@ -17,8 +17,14 @@
     {
       "id": 3,
       "prompt": "is the page in this repo any good",
-      "expected_output": "Skill triggers on terse phrasing because it pattern-matches to QA intent on an HTML page in cwd. Discovers index.html, builds dossier via Firecrawl on the topic extracted from the page, runs all four dimensions, reports inline.",
+      "expected_output": "Skill triggers on terse phrasing because it pattern-matches to QA intent on an HTML page in cwd. Discovers index.html, builds dossier via web research on the topic extracted from the page, runs all four dimensions, reports inline.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "QA the page at <fixture-copy>/index.html before I ship it.",
+      "expected_output": "Full four-dimension audit of the planted-issues fixture. Score the resulting report against evals/answer-key.json: recall >= 0.80 on the 25 planted issues, zero negative-control violations. The pseudo-element emoji (S3), non-toggling switcher (S5), and inert dark-mode toggle (S6) specifically require the rendered-DOM pass — missing all three indicates the browser checks were skipped.",
+      "files": ["fixtures/index.html", "answer-key.json"]
     }
   ]
 }

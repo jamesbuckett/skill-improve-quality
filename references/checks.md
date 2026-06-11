@@ -8,7 +8,7 @@ Use this as a reference, not a checklist to mechanically tick through. The goal 
 
 ## Dimension 1 — Factual correctness
 
-The Phase 2 dossier is the ground truth. Findings here name a claim in the page, contrast it with what an authoritative source says, and propose a concrete reconciliation.
+The research dossier (Phase 3) is the ground truth. Findings here name a claim in the page, contrast it with what an authoritative source says, and propose a concrete reconciliation.
 
 ### Categories
 

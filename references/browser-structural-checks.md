@@ -42,91 +42,22 @@ The Dimension 4 subagent must be spawned with `subagent_type=general-purpose` (n
 
 ## Audit scripts
 
-These are the JS snippets the subagent passes to `browser_evaluate`. Each returns a JSON-serialisable value the subagent reads back.
+The audit scripts live in `scripts/audits/` — one file per check, each a single arrow-function expression with a header comment explaining its interpretation. They are the single source of truth: the eval harness (`evals/run-browser-audits.mjs`) runs the same files against the planted-issues fixture, so editing a script here is automatically covered by the eval.
 
-### Accent-colour audit
+**How to pass one to `browser_evaluate`:** Read the file, strip the leading `//` comment lines, and pass everything from `() =>` onward as the `function` argument. (Evaluators treat a string with leading comments as a plain expression and silently return `undefined` instead of calling the function.)
 
-```javascript
-() => {
-  const KEEP = new Set(['color', 'background-color', 'border-color', 'outline-color', 'fill', 'stroke']);
-  const counts = new Map();
-  const elements = document.querySelectorAll('body *');
-  for (const el of elements) {
-    const style = getComputedStyle(el);
-    for (const prop of KEEP) {
-      const value = style.getPropertyValue(prop);
-      if (!value) continue;
-      // Skip transparent, currentColor, and the default text/background colours.
-      if (value === 'rgba(0, 0, 0, 0)' || value === 'transparent') continue;
-      counts.set(value, (counts.get(value) || 0) + 1);
-    }
-  }
-  // Sort by frequency; the top 1-2 are usually text + background.
-  // Anything below that with >5 uses is a candidate "accent".
-  const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  return {
-    totalDistinctColours: ranked.length,
-    topTen: ranked.slice(0, 10),
-  };
-};
+| Script | Detects | Interpretation |
+|---|---|---|
+| `scripts/audits/accent-audit.js` | Two-accent violations | Clusters computed colours by hue (30° tolerance), so an accent plus its tints/hover states/alpha washes counts as ONE accent, and neutrals (text, background, greys — saturation < 15% or near-black/near-white) are excluded entirely. Returns `accentClusters`: 1 is correct, ≥ 2 is a finding. Do not use a flat frequency ranking — the real accent often outranks the background, and white button text ties with genuine second accents. |
+| `scripts/audits/emoji-audit.js` | Emoji anywhere in rendered output | Scans `document.body.innerText` AND every element's `::before`/`::after` computed `content` — innerText does not include pseudo-element content, so a text-only scan misses emoji injected via CSS. Any non-empty array is a finding; each entry says whether it came from text or a pseudo-element and on which selector. |
+| `scripts/audits/visibility-snapshot.js` | Audience switcher that toggles nothing | Run twice — before and after `browser_click` on the switcher — and diff. If no count changed, the switcher toggles nothing: the named failure mode. |
+| `scripts/audits/theme-snapshot.js` | Dark-mode toggle that doesn't restyle | Run twice — before and after clicking the theme toggle. Finding fires if `htmlDataTheme` did not change (toggle not wired) or `bodyBg` did not change (theme variable not applied — e.g. hard-coded hex outside `:root`). |
+
+To verify the scripts themselves after editing them, run the eval harness from a directory with `playwright` installed:
+
+```bash
+node <skill-dir>/evals/run-browser-audits.mjs
 ```
-
-The subagent interprets the result: the top 1–2 most-frequent values are usually `body` text and background. After those, count distinct values with ≥5 uses — that's the rough number of "accents in play". One is correct; two or more is a finding.
-
-### Emoji audit
-
-```javascript
-() => {
-  // Match Unicode emoji ranges. Lucide SVGs are NOT in document.body.innerText.
-  const emojiRegex = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F000}-\u{1F0FF}\u{1F100}-\u{1F2FF}\u{2300}-\u{23FF}\u{1FA70}-\u{1FAFF}]/gu;
-  const text = document.body.innerText;
-  const matches = [...text.matchAll(emojiRegex)];
-  return matches.map(m => ({ char: m[0], codepoint: m[0].codePointAt(0).toString(16) }));
-};
-```
-
-Any non-empty array is a finding.
-
-### Audience switcher audit
-
-```javascript
-(initialSnapshot) => {
-  // Compare visible practitioner-only / exec-only content before and after the click.
-  // Pass the pre-click snapshot in as `initialSnapshot`; the subagent should call this
-  // function twice — once before and once after the click — and diff.
-  const counts = {};
-  for (const cls of ['practitioner-only', 'exec-only', 'expanded-only', 'details-only']) {
-    const visible = [...document.querySelectorAll('.' + cls)]
-      .filter(el => {
-        const r = el.getBoundingClientRect();
-        return r.width > 0 && r.height > 0;
-      }).length;
-    counts[cls] = visible;
-  }
-  return counts;
-};
-```
-
-The subagent calls it twice (before and after the click). If no count changed, the switcher toggles nothing — that's the named failure mode.
-
-### Dark-mode audit
-
-```javascript
-() => {
-  const html = document.documentElement;
-  const body = document.body;
-  return {
-    htmlDataTheme: html.dataset.theme || null,
-    htmlClass: html.className,
-    bodyBg: getComputedStyle(body).backgroundColor,
-    bodyColor: getComputedStyle(body).color,
-  };
-};
-```
-
-Snapshot before and after clicking the toggle. Finding fires if either:
-- `htmlDataTheme` did not change (toggle isn't wired)
-- `bodyBg` did not change (theme variable not applied)
 
 ## What to do when Playwright isn't installed
 
