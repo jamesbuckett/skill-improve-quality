@@ -4,9 +4,10 @@ level: error
 ignorecase: true
 link: "https://github.com/jamesbuckett/skill-improve-quality/blob/main/references/ai-slop.md#marketing-prologue"
 tokens:
-  - "in today's fast-paced"
-  - "in the modern landscape"
-  - "in the rapidly evolving"
+  - 'in today[''’]?s fast-paced'
+  - 'in today[''’]?s ([\w-]+ ){1,3}(landscape|world|environment|era|age|economy)'
+  - 'in the modern landscape'
+  - 'in the rapidly evolving'
   - 'as organi[sz]ations navigate'
   - 'with the increasing demand for'
   - 'modern enterprises face'

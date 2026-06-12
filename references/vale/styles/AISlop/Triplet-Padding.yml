@@ -7,6 +7,7 @@ tokens:
   - 'clear,?\s+concise,?\s+(?:and\s+)?comprehensive'
   - 'secure,?\s+scalable,?\s+(?:and\s+)?reliable'
   - 'robust,?\s+performant,?\s+(?:and\s+)?maintainable'
+  - 'robust,?\s+scalable,?\s+(?:and\s+)?seamless'
   - 'auditable,?\s+transparent,?\s+(?:and\s+)?verifiable'
   - 'fast,?\s+cheap,?\s+(?:and\s+)?reliable'
   - 'simple,?\s+elegant,?\s+(?:and\s+)?powerful'

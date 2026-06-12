@@ -4,9 +4,9 @@ level: warning
 ignorecase: true
 link: "https://github.com/jamesbuckett/skill-improve-quality/blob/main/references/ai-slop.md#hedge-phrases"
 tokens:
-  - it's worth noting that
+  - 'it[''’]s worth noting that'
   - it is worth noting that
-  - it's important to remember that
+  - 'it[''’]s important to remember that'
   - it is important to remember that
   - it bears mentioning
   - one could argue that

@@ -1,5 +1,5 @@
 extends: occurrence
-message: "Transition adverb '%s' used more than once per paragraph — usually paragraph glue, not signal"
+message: "%s transition adverbs in one paragraph — usually paragraph glue, not signal"
 level: warning
 scope: paragraph
 ignorecase: true
