@@ -1,6 +1,6 @@
 {
   "fixture": "evals/fixtures/index.html",
-  "notes": "Each planted issue is marked with an HTML comment 'PLANTED <id>' in the fixture. A correct audit finds the issue WITHOUT reading the comments (strip them before the run if scoring strictly: sed 's/<!--[^>]*-->//g'). Severity may differ by one level from 'expected_severity' without counting as a miss. The lint-html hook from skill-build-educational-site firing on this file is expected — the fixture deliberately violates its checklist.",
+  "notes": "Each planted issue is marked with an HTML comment 'PLANTED <id>' in the fixture. A correct audit finds the issue WITHOUT reading the comments (strip them before the run if scoring strictly: sed 's/<!--[^>]*-->//g'). Run with IMPROVE_QUALITY_CACHE_DIR pointed at a fresh temp dir so a warm dossier cache can't leak these corrections. Severity may differ by one level from 'expected_severity' without counting as a miss. The lint-html hook from skill-build-educational-site firing on this file is expected — the fixture deliberately violates its checklist.",
   "scoring": {
     "recall": "found_planted / 25 — a planted issue counts as found if the report quotes or locates the offending text and names the same problem",
     "false_positives": "any finding that flags a negative control below counts against precision",

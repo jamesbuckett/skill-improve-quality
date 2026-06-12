@@ -1,6 +1,6 @@
 {
   "skill_name": "skill-improve-quality",
-  "notes": "Trigger evals (1-3) check the skill activates on realistic phrasings. The fixture eval (4) measures detection quality end-to-end against evals/fixtures/index.html, scored with evals/answer-key.json. Strip the 'PLANTED' HTML comments before a strict run so the agent can't read the answers: sed 's/<!--[^>]*-->//g' fixtures/index.html > /tmp/fixture-clean.html",
+  "notes": "Trigger evals (1-3) check the skill activates on realistic phrasings. The fixture eval (4) measures detection quality end-to-end against evals/fixtures/index.html, scored with evals/answer-key.json. Strip the 'PLANTED' HTML comments before a strict run so the agent can't read the answers: sed 's/<!--[^>]*-->//g' fixtures/index.html > /tmp/fixture-clean.html. Also isolate the dossier cache — it keys on <title>+<h1>, so a dossier from any earlier run on this fixture already contains the planted corrections: export IMPROVE_QUALITY_CACHE_DIR=$(mktemp -d) before spawning the agent.",
   "evals": [
     {
       "id": 1,

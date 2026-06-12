@@ -68,12 +68,12 @@ Write a one-paragraph "topic frame" to your working notes: what is this page abo
 - **Vale (prose pre-pass).** If `vale` is on `PATH`, run it against the HTML using the bundled config:
 
   ```bash
-  vale --config=~/.claude/skills/skill-improve-quality/references/vale/.vale.ini \
-       --output=JSON \
+  vale --config="$HOME/.claude/skills/skill-improve-quality/references/vale/.vale.ini" \
+       --no-exit --output=JSON \
        <abs-path-to-index.html> > /tmp/improve-quality-vale.json
   ```
 
-  The config in `references/vale/` ships rules for tic words, marketing voice, hedge phrases, transition-adverb overuse, triplet padding, marketing prologues, and the "not only X but also Y" pattern. Each rule links back to the canonical `ai-slop.md` entry so the subagent can cite the rationale. If `vale` is not installed, skip — the prose subagent runs unaided. The skill never blocks on optional tooling.
+  Use `$HOME`, not `~` — the shell does not tilde-expand after `--config=`, and Vale treats the literal `~` path as missing. `--no-exit` matters too: without it Vale exits non-zero whenever it finds error-level issues, which looks like a failed command when the pre-pass actually worked. The config in `references/vale/` ships rules for tic words, marketing voice, hedge phrases, transition-adverb overuse, triplet padding, marketing prologues, and the "not only X but also Y" pattern. Each rule links back to the canonical `ai-slop.md` entry so the subagent can cite the rationale. If `vale` is not installed, skip — the prose subagent runs unaided. The skill never blocks on optional tooling.
 
 - **Link reachability (citation pre-pass).** Run the bundled checker:
 
@@ -221,8 +221,8 @@ Then check the log: if the same prose pattern (`prose_patterns` name) has appear
 
 Walk through findings interactively. Use `AskUserQuestion` with `multiSelect: true` to let the user approve a batch in one go. Two patterns work:
 
-- **Batch by severity** — "Which CRITICAL findings should I apply?" with each finding as an option labelled by its index.
-- **All-or-each** — "Apply all critical, review major and minor individually?" then walk through the rest.
+- **Batch by severity** — "Which CRITICAL findings should I apply?" with each finding as an option labelled by its index. `AskUserQuestion` allows at most 4 options per question (and 4 questions per call), so chunk a longer bucket into consecutive questions — findings 1–4, then 5–8 — instead of one oversized list.
+- **All-or-each** — "Apply all critical, review major and minor individually?" then walk through the rest. Prefer this when a bucket is large (more than ~8 findings); chunked multi-select gets tedious at that size.
 
 Default to batch-by-severity for the first pass — it's the quickest path through a long report. For findings the user wants to discuss before applying, switch to one-at-a-time.
 
