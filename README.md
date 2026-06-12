@@ -22,7 +22,7 @@ git clone https://github.com/jamesbuckett/skill-improve-quality.git ~/projects/s
 ln -s ~/projects/skill-improve-quality ~/.claude/skills/skill-improve-quality
 ```
 
-Then, inside any GitHub-backed repo, ask Claude to invoke the skill by its trigger phrase.
+Then, inside any repo containing a single-file HTML explainer (typically `index.html`), ask Claude to invoke the skill by its trigger phrase.
 
 ## Usage
 

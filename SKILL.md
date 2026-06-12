@@ -1,7 +1,7 @@
 ---
 name: skill-improve-quality
 description: >-
-  Audit and improve the quality of a single-file HTML explainer page (typically `index.html`) in the current repo without changing its purpose. Use whenever the user wants to QA, audit, fact-check, polish, sharpen, review, critique, validate, tighten, or improve an explainer, primer, one-pager, landing page, deep-dive, or single-file HTML — even when they don't use the exact phrase "improve quality". Triggers include "check this page", "is this accurate", "review the prose", "polish this", "audit this index.html", "fact-check this", "is the content correct", "is this clear enough", "sharpen this writing", "tighten this page", "QA the page", "is this professional", "is this any good", and "/skill-improve-quality". Skip when there is no HTML file to audit, when the user wants new content written rather than checked, or when they want visual-only feedback.
+  Audit and improve the quality of a single-file HTML explainer page (typically `index.html`) in the current repo without changing its purpose. Use whenever the user wants to QA, audit, fact-check, polish, sharpen, review, critique, validate, tighten, or improve an explainer, primer, one-pager, landing page, deep-dive, or single-file HTML — even when they don't use the exact phrase "improve quality". Triggers include "check this page", "is this accurate", "review the prose", "polish this", "audit this index.html", "fact-check this", "is the content correct", "is this clear enough", "sharpen this writing", "tighten this page", "QA the page", "is this professional", "is this any good", "proofread this", "copyedit this page", "check the citations", and "/skill-improve-quality". Skip when there is no HTML file to audit, when the user wants new content written rather than checked, or when they want visual-only feedback.
 ---
 
 # skill-improve-quality
@@ -82,7 +82,7 @@ Write a one-paragraph "topic frame" to your working notes: what is this page abo
       <abs-path-to-index.html> /tmp/improve-quality-links.json
   ```
 
-  It HEAD/GET-requests every external URL and reports status, final URL after redirects, and bot-wall notes. Reachability comes from this report — never from an LLM's guess. Policy judgements (no Wikipedia, primary sources only, redirect landed on a marketing page) stay with the factual subagent, which reads this JSON.
+  It HEAD/GET-requests every external URL and reports status, final URL after redirects, and bot-wall notes. Reachability comes from this report — never from an LLM's guess. Policy judgements (no Wikipedia, primary sources only, redirect landed on a marketing page) stay with the factual subagent, which reads this JSON. The script exits non-zero when any link is broken — that's a finding to report, not a failed command.
 
 **Step 2 — Spawn dimensions 2–4 in the background.** None of these need the research dossier, so spawn them now with `run_in_background: true` on the `Agent` tool and collect their results in Phase 4:
 
@@ -111,18 +111,18 @@ The script keys by the page's `<title>` + `<h1>`, hashes the pair to 16 hex char
 - **Cache hit:** save the returned JSON to `/tmp/improve-quality-dossier.json`, then run a **claims-coverage check before trusting it**: compare the load-bearing claims you listed in Phase 1 against the dossier's slots. Claims the dossier doesn't cover are exactly what was added or edited since the dossier was built — the cache key only sees the title, not the body. Run step 1's targeted queries for just the uncovered claims, merge the results into the dossier JSON, and re-`put` it. If everything is covered, skip directly to spawning the factual subagent.
 - **Cache miss:** continue with step 1.
 
-**Step 1 — Search.** Use the Exa MCP server's `web_search_exa` tool to run 3–5 targeted queries:
+**Step 1 — Search.** Run 3–5 targeted queries through **`firecrawl:firecrawl-search`** (real search results with full page content):
    - The topic name + "specification" (find the primary spec)
    - The topic name + the regulator's name (find the authoritative regulatory page)
    - The topic name + "current version" or "latest" (find what's current as of today)
    - Any specific clause IDs or version numbers from the page (verify each)
    - The topic name + "comparison" or "vs" (find the typical points of contrast)
 
-   Exa-specific tips: request `numResults: 5–10` per query; prefer `type: "neural"` for conceptual queries ("what is X spec"), `type: "keyword"` for exact-string queries (clause IDs, version numbers); set `livecrawl: "always"` when verifying current-as-of-today claims. If the topic is academic, also call `research_paper_search`; if it concerns named vendors, also call `company_research`.
+   If the Exa MCP server is connected, prefer its `web_search_exa` for these queries — the controls are sharper: request `numResults: 5–10` per query; `type: "neural"` for conceptual queries ("what is X spec"), `type: "keyword"` for exact-string queries (clause IDs, version numbers); `livecrawl: "always"` when verifying current-as-of-today claims; `research_paper_search` for academic topics; `company_research` for named vendors. Don't go hunting for Exa when it isn't connected — Firecrawl is the working default.
 
 **Step 2 — Extract.** Once 3–5 authoritative URLs are surfaced, use **`firecrawl:firecrawl-scrape`** to pull full markdown from each. Extract the URLs the search returned — don't swap in URLs you remembered from prior sessions. Memorized "authoritative hubs" go stale, get archived, or land on the wrong edition; treating the search as the arbiter is the point of running it. Authoritative means: standards bodies, regulators, primary spec maintainers, official documentation. Not blog posts, not Wikipedia, not vendor marketing pages. If a source requires interaction (login wall, click-through, paginated docs), use **`firecrawl:firecrawl-interact`** instead. If you need to traverse an entire docs section, use **`firecrawl:firecrawl-crawl`** with a tight path filter.
 
-**Fallback chain.** If the Exa MCP server isn't connected, run the same query templates through **`firecrawl:firecrawl-search`** (real search results with full page content). If Firecrawl isn't installed either, use `WebSearch` to find sources and `WebFetch` to extract. The quality bar does not move: only primary sources land in the dossier regardless of which tool found them.
+**Fallback chain.** If Firecrawl isn't installed, use `WebSearch` to find sources and `WebFetch` to extract. The quality bar does not move: only primary sources land in the dossier regardless of which tool found them.
 
 **Build the research dossier** with these slots:
 - Current version of the spec / regulation (with effective date)
@@ -215,7 +215,14 @@ jq -nc --arg date "$(date +%F)" --arg topic "<topic>" --arg file "<abs-path>" \
    >> ~/.cache/improve-quality/audit-log.jsonl
 ```
 
-Then check the log: if the same prose pattern (`prose_patterns` name) has appeared in 3 or more audits, tell the user and offer to promote it to a Vale rule in `references/vale/styles/AISlop/` — that moves the pattern from LLM detection to deterministic detection for every future run.
+Then check the log:
+
+```bash
+jq -s '[.[].prose_patterns[]] | group_by(.) | map({pattern: .[0], audits: length}) | sort_by(-.audits)' \
+   ~/.cache/improve-quality/audit-log.jsonl
+```
+
+If the same prose pattern has appeared in 3 or more audits, tell the user and offer to promote it to a Vale rule in `references/vale/styles/AISlop/` — that moves the pattern from LLM detection to deterministic detection for every future run.
 
 ### Phase 6 — Apply approved edits
 
@@ -235,25 +242,18 @@ When applying **structural fixes** (which often have no quotable `old_string` �
 - Describe the change, apply it, then **verify by re-running the specific audit script** from `scripts/audits/` that flagged it. Fixed the dark-mode background? Re-run `theme-snapshot.js` before and after the toggle click and confirm `bodyBg` now changes. Fixed the inert switcher? Re-run `visibility-snapshot.js` around a click. A structural fix without a re-run audit is unverified.
 - If a structural fix changes visual layout (adding a missing glossary section, consolidating a comparison table), tell the user the page should be re-screenshot via `skill-style-guide`'s harness. Don't re-screenshot automatically — that's a separate verification step the user runs.
 
-## Tips and guardrails
+## Guardrails
 
-- **The dossier is the contract.** Every factual finding traces to the dossier built in Phase 3. If you can't cite a source, don't claim a factual error — downgrade to "ambiguous" and ask the user.
-- **Quote, don't paraphrase, the offending text.** Findings without exact quotes are hard to act on. If you can't quote it, you don't have a finding.
-- **Don't invent failure modes.** The check list lives in `references/checks.md` and the sibling skills. Don't add new checks for hypothetical issues just because they sound clever.
-- **Lean on the user's judgement on minor findings.** Style is partly personal. Tic words used once aren't a fire; tic words on every page are. Flag, don't enforce.
+- **The dossier is the contract.** Every factual finding traces to the dossier built in Phase 3 and shows a side-by-side: what the page says vs. what the source says. Searching for sources without actually comparing them is fact-check theater. If you can't cite a source, don't claim a factual error — downgrade to "ambiguous" and ask the user.
+- **Quote, don't paraphrase, the offending text.** If you can't quote it, you don't have a finding — and you can't apply it either: `Edit` needs the exact text as `old_string`. If the quote isn't unique in the file, expand it until it is; don't `replace_all` blindly.
+- **Your taste is not a finding.** "I prefer shorter sentences" doesn't count; a sentence that takes two reads to parse does. Style is partly personal — flag minor findings, don't enforce them, and let the user decide.
+- **Flag patterns, not single instances.** Three "leverages" in one section is a finding; one "leverage" in five thousand words is not. Em-dashes are deliberate style in the sibling skills' output, not slop.
+- **Findings name actual deviations.** The check list lives in `references/checks.md` and the sibling skills. Don't add checks for hypothetical issues, and don't report compliance ("the page correctly has no CTAs") as if it were a finding.
+- **Stale-cache trust.** A dossier cache hit is not a license to skip verification: the cache key only sees `<title>` + `<h1>`, so claims edited into the body since the dossier was built are invisible to it. Always run the claims-coverage check on a hit.
 - **Don't refactor.** The skill's job is improving content quality, not restructuring the page. If a section needs a wholesale rewrite, say so as a finding and let the user decide whether to invoke `skill-build-educational-site` instead.
 - **Web research is the differentiator.** Skipping Phase 3 reduces this skill to a stylistic linter. The deep topic expansion is the reason this skill exists — don't shortcut it.
-
-## Failure modes to avoid
-
-- **Drive-by stylistic preferences** — "I prefer shorter sentences" is not a finding. The page either has a clarity problem (a sentence that takes two reads to parse) or it doesn't. Don't flag your own taste.
-- **Fact-check theater** — Searching for sources and not actually comparing what they say. Every factual finding must include a side-by-side: what the page says vs. what the source says.
-- **Stale-cache trust** — A dossier cache hit is not a license to skip verification: the cache key only sees `<title>` + `<h1>`, so claims edited into the body since the dossier was built are invisible to it. Always run the claims-coverage check on a hit.
-- **AI-slop over-detection** — Em-dashes are not always slop; the user's other skills use them deliberately. Flag patterns, not single instances. Three "leverages" in one section is a finding; one "leverage" in five thousand words is not.
-- **Structural nit-picking** — If `skill-build-educational-site` says "no marketing CTAs" and the page has no CTAs, that's not a finding. Findings name actual deviations, not hypothetical compliance.
-- **Reporting without applying** — The user chose "report + propose edits". Stopping after Phase 5 leaves the work undone. Always run Phase 6 unless the user opts out.
-- **Applying without quoting** — Edits without exact-text matches break files. If `Edit` fails because `old_string` isn't unique, fix the quote — don't `replace_all` blindly.
-- **Skipping the rendered-DOM pass** — The pseudo-element emoji, the non-toggling switcher, and the inert dark-mode toggle are invisible to source-level checks. If Playwright isn't available, say so in the report; don't silently pretend the rendered checks ran.
+- **Report, then apply.** The user chose "report + propose edits" — stopping after Phase 5 leaves the work undone. Always run Phase 6 unless the user opts out.
+- **Don't silently skip the rendered-DOM pass.** The pseudo-element emoji, the non-toggling switcher, and the inert dark-mode toggle are invisible to source-level checks. If Playwright isn't available, say so in the report; don't pretend the rendered checks ran.
 
 ## Bundled resources
 
@@ -263,4 +263,4 @@ When applying **structural fixes** (which often have no quotable `old_string` �
 - `scripts/audits/` — The browser audit scripts (accent clustering, emoji incl. pseudo-elements, switcher and theme snapshots). Single source of truth, exercised by the eval harness.
 - `scripts/check-links.sh` — Deterministic link-reachability report for every external URL.
 - `scripts/dossier-cache.sh` — Get/put the Phase 3 research dossier, keyed by page topic, 14-day TTL.
-- `evals/` — Test prompts (`evals.json`), a planted-issues fixture (`fixtures/index.html`), its answer key (`answer-key.json`), and the browser-audit harness (`run-browser-audits.mjs`). Not loaded at runtime; used when editing this skill.
+- `evals/` — Test prompts (`evals.json`), a should/should-not-trigger query set (`trigger-evals.json`), a planted-issues fixture (`fixtures/index.html`), its answer key (`answer-key.json`), and the browser-audit harness (`run-browser-audits.mjs`). Not loaded at runtime; used when editing this skill.
