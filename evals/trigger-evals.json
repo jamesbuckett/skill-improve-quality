@@ -1,0 +1,22 @@
+[
+  {"query": "I just finished the DORA explainer in this repo (index.html) — can you check it's actually accurate before I send it to the risk team tomorrow?", "should_trigger": true},
+  {"query": "polish this page up a bit, the prose feels kind of chatgpt-ish in places", "should_trigger": true},
+  {"query": "is this any good", "should_trigger": true},
+  {"query": "my colleague wrote this fapi page before he left, no idea if the oauth references are still right. audit it pls", "should_trigger": true},
+  {"query": "QA index.html before I ship it", "should_trigger": true},
+  {"query": "can you fact check the pci-dss clause numbers in this explainer? v4.0.1 renumbered some stuff i think", "should_trigger": true},
+  {"query": "review the prose on this one-pager — exec audience, I want it tight and professional", "should_trigger": true},
+  {"query": "sharpen this page, the sentences feel long and the glossary seems thin", "should_trigger": true},
+  {"query": "proofread the explainer before thursday's briefing with the architects", "should_trigger": true},
+  {"query": "something feels off about this page but i can't put my finger on it. take a look?", "should_trigger": true},
+  {"query": "build me a one-page explainer on SPIFFE/SPIRE for platform engineers, exec summary up top", "should_trigger": false},
+  {"query": "the dark mode toggle looks wrong on mobile — take screenshots at the usual breakpoints and fix the spacing", "should_trigger": false},
+  {"query": "fact-check this README.md before I make the repo public", "should_trigger": false},
+  {"query": "review my PR for the auth service when you get a chance", "should_trigger": false},
+  {"query": "is this blog post draft accurate? it's in draft.md", "should_trigger": false},
+  {"query": "make the hero section of the explainer pop more, maybe a gradient behind the title", "should_trigger": false},
+  {"query": "add a section on quantum-safe crypto to index.html after the mechanics part", "should_trigger": false},
+  {"query": "https://www.youtube.com/watch?v=dQw4w9WgXcQ — summarize this talk about FAPI for me", "should_trigger": false},
+  {"query": "update this repo — readme, license, topics, the usual", "should_trigger": false},
+  {"query": "is this sql migration correct? worried about the unique index on a nullable column", "should_trigger": false}
+]

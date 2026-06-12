@@ -1,24 +1,24 @@
 {
   "skill_name": "skill-improve-quality",
-  "notes": "Trigger evals (1-3) check the skill activates on realistic phrasings. The fixture eval (4) measures detection quality end-to-end against evals/fixtures/index.html, scored with evals/answer-key.json. Strip the 'PLANTED' HTML comments before a strict run so the agent can't read the answers: sed 's/<!--[^>]*-->//g' fixtures/index.html > /tmp/fixture-clean.html. Also isolate the dossier cache — it keys on <title>+<h1>, so a dossier from any earlier run on this fixture already contains the planted corrections: export IMPROVE_QUALITY_CACHE_DIR=$(mktemp -d) before spawning the agent.",
+  "notes": "Behavioral evals (1-3) run realistic phrasings against a comment-stripped copy of the fixture; trigger-evals.json holds the should/should-not-trigger query set for description tuning (skill-creator run_loop format). The fixture eval (4) measures detection quality end-to-end against evals/fixtures/index.html, scored with evals/answer-key.json. Strip the 'PLANTED' HTML comments before a strict run so the agent can't read the answers: sed 's/<!--[^>]*-->//g' fixtures/index.html > /tmp/fixture-clean.html. Also isolate the dossier cache — it keys on <title>+<h1>, so a dossier from any earlier run on this fixture already contains the planted corrections: export IMPROVE_QUALITY_CACHE_DIR=$(mktemp -d) before spawning the agent.",
   "evals": [
     {
       "id": 1,
       "prompt": "I just finished this FAPI 2.0 explainer at index.html and want to ship it tomorrow. Can you do a quality pass before I send it round? I want to make sure the regulatory references are right and the prose doesn't feel AI-written.",
       "expected_output": "Report grouped by severity covering factual (DORA / FAPI / OAuth references verified against primary sources), clarity (undefined acronyms, runaway sentences), prose (AI-slop tic words, hedges, marketing voice), and structural (audience switcher wired, glossary completeness, single accent). Followed by interactive approval pass for each finding.",
-      "files": []
+      "files": ["fixtures/index.html"]
     },
     {
       "id": 2,
       "prompt": "this index.html got handed to me from a colleague and i'm not sure it's accurate — pcidss 4 stuff in particular. can you audit it?",
       "expected_output": "Factual-heavy report with PCI-DSS 4.0.x clause IDs verified via Firecrawl against the PCI SSC documents, version numbers checked against current revision, every cited clause cross-referenced. Other dimensions covered but factual leads the report.",
-      "files": []
+      "files": ["fixtures/index.html"]
     },
     {
       "id": 3,
       "prompt": "is the page in this repo any good",
       "expected_output": "Skill triggers on terse phrasing because it pattern-matches to QA intent on an HTML page in cwd. Discovers index.html, builds dossier via web research on the topic extracted from the page, runs all four dimensions, reports inline.",
-      "files": []
+      "files": ["fixtures/index.html"]
     },
     {
       "id": 4,
