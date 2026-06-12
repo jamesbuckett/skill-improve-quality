@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dossier-cache.sh — get/put a Phase 2 research dossier keyed by HTML topic.
+# dossier-cache.sh — get/put a Phase 3 research dossier keyed by HTML topic.
 #
 # Usage:
 #   dossier-cache.sh key <html-file>                 # prints the topic hash
@@ -26,10 +26,13 @@ topic_hash() {
     return 2
   fi
   local title h1
-  title=$(grep -oP '<title[^>]*>\K[^<]+' "$html" 2>/dev/null | head -1 \
+  # grep -oE + sed instead of GNU-only grep -P, so the script also runs on BSD/macOS grep.
+  title=$(grep -oE '<title[^>]*>[^<]+' "$html" 2>/dev/null | head -1 \
+            | sed -E 's/^<title[^>]*>//' \
             | tr '[:upper:]' '[:lower:]' | tr -s '[:space:]' ' ' \
             | sed 's/^ //;s/ $//' || true)
-  h1=$(grep -oP '<h1[^>]*>\K[^<]+' "$html" 2>/dev/null | head -1 \
+  h1=$(grep -oE '<h1[^>]*>[^<]+' "$html" 2>/dev/null | head -1 \
+         | sed -E 's/^<h1[^>]*>//' \
          | tr '[:upper:]' '[:lower:]' | tr -s '[:space:]' ' ' \
          | sed 's/^ //;s/ $//' || true)
   if [ -z "$title" ] && [ -z "$h1" ]; then

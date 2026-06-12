@@ -27,7 +27,8 @@ OUT="${2:-/tmp/improve-quality-links.json}"
 UA="Mozilla/5.0 (compatible; improve-quality-link-check)"
 TIMEOUT="${LINK_CHECK_TIMEOUT:-15}"
 
-mapfile -t urls < <(grep -oP 'href="\Khttps?://[^"]+' "$HTML" | sort -u)
+# grep -oE + sed instead of GNU-only grep -P, so the script also runs on BSD/macOS grep.
+mapfile -t urls < <(grep -oE 'href="https?://[^"]+"' "$HTML" | sed -E 's/^href="|"$//g' | sort -u)
 
 results="[]"
 for url in "${urls[@]}"; do
