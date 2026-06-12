@@ -263,4 +263,4 @@ When applying **structural fixes** (which often have no quotable `old_string` �
 - `scripts/audits/` — The browser audit scripts (accent clustering, emoji incl. pseudo-elements, switcher and theme snapshots). Single source of truth, exercised by the eval harness.
 - `scripts/check-links.sh` — Deterministic link-reachability report for every external URL.
 - `scripts/dossier-cache.sh` — Get/put the Phase 3 research dossier, keyed by page topic, 14-day TTL.
-- `evals/` — Test prompts (`evals.json`), a should/should-not-trigger query set (`trigger-evals.json`), a planted-issues fixture (`fixtures/index.html`), its answer key (`answer-key.json`), and the browser-audit harness (`run-browser-audits.mjs`). Not loaded at runtime; used when editing this skill.
+- `evals/` — Test prompts (`evals.json`), a should/should-not-trigger query set (`trigger-evals.json`), a planted-issues fixture (`fixtures/index.html`), its answer key (`answer-key.json`), the browser-audit harness (`run-browser-audits.mjs`), and a runbook with environment gotchas (`README.md`). Not loaded at runtime; used when editing this skill.
